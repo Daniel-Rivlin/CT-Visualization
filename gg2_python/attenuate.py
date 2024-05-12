@@ -40,6 +40,6 @@ def attenuate(original_energy, coeff, depth):
 
 	# Work out residual energy for each depth and at each energy
 	for i in range(energies):
-			original_energy[i] *= np.exp(-coeff[i]*depth)
+		original_energy[i] *= np.exp(-coeff[i]*depth)
 
 	return original_energy
