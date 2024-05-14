@@ -16,5 +16,8 @@ def ct_calibrate(photons, material, sinogram, scale):
 	n = sinogram.shape[1]
 
 	# perform calibration
+	depth = 2 * n * scale
+	total_air_photons = np.sum(photons * np.exp(-depth * material.coeff('Air')))
+	sinogram = -np.log(sinogram/total_air_photons)
 
 	return sinogram
