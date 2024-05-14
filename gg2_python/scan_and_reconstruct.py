@@ -15,15 +15,18 @@ def scan_and_reconstruct(photons, material, phantom, scale, angles, mas=10000, a
 		alpha for filtering. The output reconstruction is the same size as phantom."""
 
 
-	# convert source (photons per (mas, cm^2)) to photons
-
+	# convert source (photons per (mas, cm^2)) to photons,
 	# create sinogram from phantom data, with received detector values
+	sinogram = ct_scan(photons, material, phantom, scale, angles, mas)
 
 	# convert detector values into calibrated attenuation values
+	sinogram = ct_calibrate(photons, material, sinogram, scale)
 
 	# Ram-Lak
+	sinogram = ramp_filter(sinogram, scale, alpha)
 
 	# Back-projection
+	phantom = back_project(sinogram)
 
 	# convert to Hounsfield Units
 
