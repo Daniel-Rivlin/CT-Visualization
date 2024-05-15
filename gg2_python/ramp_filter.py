@@ -22,16 +22,19 @@ def ramp_filter(sinogram, scale, alpha=0.001):
 	# apply filter to all angles
 	print('Ramp filtering')
 
+	# pad sinogram with zeroes
+	sinogram = np.pad(sinogram, [(0, 0), (0, (m-n))], mode='constant', constant_values=0)
+
 	# step 1: take the Fourier transform in r direction
 	FT = np.fft.fft(sinogram, axis=1)
 
 	# step 2: multiply each frequency by the appropriate coefficient in the Ram-Lak filter
-	frequencies = np.linspace(0, 2*np.pi, n, endpoint=False)
+	frequencies = np.linspace(0, 2*np.pi, m, endpoint=False)
 	RL_multipliers = (abs(frequencies) / (2 * np.pi)) * np.power((np.cos(frequencies / 4)), alpha)
-	RL_multipliers[0] = RL_multipliers[1]/6
-	FT *= RL_multipliers
+	for row in FT:
+		row *= RL_multipliers
 
 	# step 3: take the inverse Fourier transform in the r direction
-	sinogram = np.real(np.fft.ifft(FT, axis=1)).astype(float)
+	sinogram = np.real(np.fft.ifft(FT, axis=1)).astype(float)[:,:(m-n)]
 	
 	return sinogram
