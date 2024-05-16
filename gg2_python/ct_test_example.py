@@ -81,7 +81,7 @@ def test_3(i=99):
 	s = fake_source(source.mev, selected_mev, method='ideal') #idealised source
 	ms_errors = []
 	f = open('results/test_3_output.txt', mode='w')
-	save_draw(multi_circle_phantom([1,2,3]), 'results', 'Test3 Circles')
+	save_draw(multi_circle_phantom([3, 2, 1]), 'results', 'Test3 Circles')
 	X = multi_circle_phantom((3*i, 3*i+1, 3*i+2))
 	for i in range(2): #testing first 6 materials in batches of 3
 		X = multi_circle_phantom((3*i, 3*i+1, 3*i+2)) #generate phantom
@@ -91,7 +91,7 @@ def test_3(i=99):
 		ms_errors.append(np.mean((y[80:100, 155:175]-material.coeff(material.name[3*i+1])[99])**2))
 		ms_errors.append(np.mean((y[155:175, 80:100]-material.coeff(material.name[3*i+2])[99])**2))
 
-	for i in range(3):
+	for i in range(6):
 		f.writelines('Squared attenuation error for '+ material.name[i] + ' is ' + str(ms_errors[i]) + "\n")
 	total_ms_error = np.mean(ms_errors)
 
@@ -104,7 +104,7 @@ def test_3(i=99):
 # Run the various tests
 # print('Test 1')
 # test_1()
-print('Test 2')
-test_2()
-# print('Test 3')
-# test_3()
+# print('Test 2')
+# test_2()
+print('Test 3')
+test_3()
