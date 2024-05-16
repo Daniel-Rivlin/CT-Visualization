@@ -25,19 +25,40 @@ def multi_circle_phantom(material_indexes):
 # these are just some examples to get you started
 # all the output should be saved in a 'results' directory
 
+def normalize_min_max(data):
+	return (data - np.min(data)) / (np.max(data) - np.min(data))
+
 def test_1():
-	# explain what this test is for
+	"""Flattended Geometry Test
+	This test performs scan and resconst on a phantom, flattens the output
+	to a binary output and then checks the geometry of the reconstructed image.
+	This compares the scale and orientation of the image to the phantom
+	"""
 
 	# work out what the initial conditions should be
-	p = ct_phantom(material.name, 256, 3)
-	s = source.photon('100kVp, 3mm Al')
+	p = ct_phantom(material.name, 256, 1)
+	#s = source.photon('80kVp, 3mm Al')
+	s = fake_source(source.mev, 0.08, method='ideal')
 	y = scan_and_reconstruct(s, material, p, 0.01, 256)
 
-	# save some meaningful results
-	save_draw(y, 'results', 'test_1_image')
-	save_draw(p, 'results', 'test_1_phantom')
-
 	# how to check whether these results are actually correct?
+	#normalize and flatten
+	p_norm = normalize_min_max(p)
+	y_norm = normalize_min_max(np.clip(y, 0, None))
+
+	#find difference
+	diff_norm = normalize_min_max(np.clip(p_norm - y_norm, 0, None))
+	num_pixels = diff_norm.sum(axis=1).sum(axis=0)/256**2
+
+	# save a quantitative result
+	f = open('results/test_1_output.txt', mode='w')
+	f.write('Fraction of pixels different is ' + str(num_pixels))
+	f.close()
+
+	# save relevant qualitative results (images)
+	save_draw(p_norm, 'results', 'test_1_phantom_norm')
+	save_draw(y_norm, 'results', 'test_1_image_norm')
+	save_draw(diff_norm, 'results', 'test_1_diff_norm')
 
 def test_2():
 	# explain what this test is for
