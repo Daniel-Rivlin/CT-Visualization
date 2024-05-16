@@ -37,6 +37,7 @@ def plotter3(fig, ax, X, Y, angles, n=256):
     ax[0].axis('off')
 
     im1 = ax[1].imshow(Y, cmap = "gray",origin='lower',aspect ='auto', vmin = 0)
+    ax[1].set_box_aspect(1)
     ax[1].set_title("Reconstruction")
     cbar1 = ax[1].figure.colorbar(im1, ax=ax[1],fraction=0.046, pad=0.04)
     cbar1.ax.set_ylabel("Attenuation", rotation = -90, va='bottom')
@@ -49,7 +50,7 @@ n = 256
 angles = 256
 source2 = source.photon('100kVp, 2mm Al')
 X = ct_phantom(material.name, 256, 3)
-
+print(X)
 # y = ct_scan(source2, material, X, 0.1, angles)
 # # fig, ax = plt.subplots(1,2)
 # # plotter2(fig, ax, X, y, angles)
@@ -70,9 +71,15 @@ X = ct_phantom(material.name, 256, 3)
 # frequencies = np.fft.fftfreq(m, scale) * 2 * np.pi
 # print(frequencies.shape)
 
-reconstruct_x = scan_and_reconstruct(source2, material, X, 0.1, angles)
+reconstruct_x = scan_and_reconstruct(source2, material, X, 0.1, angles, alpha = 3)
 fig, ax = plt.subplots(1,2)
-plotter3(fig, ax, X, reconstruct_x, angles)
+# actual_atten = np.zeros(X.shape)
+
+# for i in range(X.shape[0]):
+#     for j in range(X.shape[1]):
+#         actual_atten[i, j] = np.sum(material.coeff(material.name[int(X[i,j])])*source2)
+
+plotter3(fig, ax, actual_atten, reconstruct_x, angles)
 print(np.shape(reconstruct_x))
 
 
