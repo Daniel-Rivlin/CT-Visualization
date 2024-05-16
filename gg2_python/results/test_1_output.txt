@@ -1,0 +1,1 @@
+Fraction of pixels different is 0.060155163233361224

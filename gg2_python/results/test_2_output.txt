@@ -1,0 +1,3 @@
+Correlation coefficient for single large hip replacement: 0.9575277661834712
+Correlation coefficient for bilateral hip replacement: 0.9626324266025279
+Correlation coefficient for sphere with three satellites: 0.9544142137994042

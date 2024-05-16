@@ -42,11 +42,11 @@ def test_1():
 	y = scan_and_reconstruct(s, material, p, 0.01, 256)
 
 	# how to check whether these results are actually correct?
-	#normalize and flatten
+	# normalize and flatten
 	p_norm = normalize_min_max(p)
 	y_norm = normalize_min_max(np.clip(y, 0, None))
 
-	#find difference
+	# find difference
 	diff_norm = normalize_min_max(np.clip(p_norm - y_norm, 0, None))
 	num_pixels = diff_norm.sum(axis=1).sum(axis=0)/256**2
 
@@ -61,38 +61,46 @@ def test_1():
 	save_draw(diff_norm, 'results', 'test_1_diff_norm')
 
 def test_2():
-	# This test finds the correlation between the exact 
-	# attenuation values of a phantom at photon energy
-	# 0.1 MeV to the attenuation values of the reconstruction
-	# at the same energy. Values for correlation should be
-	# large (>0.7).
+	""" Correlation Test
+	This test finds the correlation between the exact attenuation
+	values of a phantom at photon energy 0.1 MeV to the attenuation
+	values of the reconstruction at the same energy. Values for
+	correlation should be large (>0.85) to be considered matching.
+	"""
 
 	# generate a phantom image
-	phantom = ct_phantom(material.name, 256, 3)
+	correlations = np.zeros(3)
+	for i in range(3):
+		phantom = ct_phantom(material.name, 256, i+3)
 
-	# simulate scanning and reconstruction using an ideal
-	# source emitting photons of energy 0.1 MeV
-	s = fake_source(source.mev, 0.1, method='ideal')
-	reconstruction = scan_and_reconstruct(s, material, phantom, 0.01, 256)
-	phantom[np.where(phantom < 0)] = 0
-	reconstruction[np.where(reconstruction < 0)] = 0
+		# simulate scanning and reconstruction using an ideal
+		# source emitting photons of energy 0.1 MeV
+		s = fake_source(source.mev, 0.1, method='ideal')
+		reconstruction = scan_and_reconstruct(s, material, phantom, 0.01, 256)
+		phantom[np.where(phantom < 0)] = 0
+		reconstruction[np.where(reconstruction < 0)] = 0
 
-	# convert phantom image material indexes to attenuations
-	# (at energy 0.1 MeV)
-	for m in range(1, len(material.name)):
-		if m in phantom:
-			phantom[np.where(phantom == m)] = material.coeffs[m, 99]
+		# convert phantom image material indexes to attenuations
+		# (at energy 0.1 MeV)
+		for m in range(1, len(material.name)):
+			if m in phantom:
+				phantom[np.where(phantom == m)] = material.coeffs[m, 99]
 
-	# find correlation between phantom and reconstruction
-	phantom = phantom.flatten()
-	reconstruction = reconstruction.flatten()
-	correlation = np.corrcoef(phantom, reconstruction)
-	print(correlation[0,1])
+		# find correlation between phantom and reconstruction
+		phantom = phantom.flatten()
+		reconstruction = reconstruction.flatten()
+		correlations[i] = np.corrcoef(phantom, reconstruction)[0,1]
+
+	f = open('results/test_2_output.txt', mode='w')
+	f.write('Correlation coefficient for single large hip replacement: ' + str(correlations[0]) + '\n')
+	f.write('Correlation coefficient for bilateral hip replacement: ' + str(correlations[1]) + '\n')
+	f.write('Correlation coefficient for sphere with three satellites: ' + str(correlations[2]) + '\n')
+	f.close()
 
 def test_3(i=99):
-	#Block attenuation values test
-    #Sets of simulated material circles are scanned using an idealised source
-	#The expected attenuation is calculated using the attenuation coefficient for that energy and compared to the known values
+	# Block attenuation values test
+    # Sets of simulated material circles are scanned using an idealised source
+	# The expected attenuation is calculated using the attenuation coefficient for that energy and compared to the known values
 	selected_mev = material.mev[i] #0.1MeV
 	s = fake_source(source.mev, selected_mev, method='ideal') #idealised source
 	ms_errors = []
