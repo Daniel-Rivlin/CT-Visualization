@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import numpy.matlib
-
+import matplotlib.pyplot as plt
 def ramp_filter(sinogram, scale, alpha=0.001):
 	""" Ram-Lak filter with raised-cosine for CT reconstruction
 
@@ -23,18 +23,25 @@ def ramp_filter(sinogram, scale, alpha=0.001):
 	print('Ramp filtering')
 
 	# pad sinogram with zeroes
-	sinogram = np.pad(sinogram, [(0, 0), (0, (m-n))], mode='constant', constant_values=0)
+	# sinogram = np.pad(sinogram, [(0, 0), (0, (m-n))], mode='constant', constant_values=0)
 
 	# step 1: take the Fourier transform in r direction
-	FT = np.fft.fft(sinogram, axis=1)
+
+
+	FT = np.fft.fft(sinogram, n=m, axis=1)
 
 	# step 2: multiply each frequency by the appropriate coefficient in the Ram-Lak filter
-	frequencies = np.linspace(0, 2*np.pi, m, endpoint=False)
-	RL_multipliers = (abs(frequencies) / (2 * np.pi)) * np.power((np.cos(frequencies / 4)), alpha)
+	frequencies = np.fft.fftfreq(m, scale) * 2 * np.pi
+	print(frequencies.shape)
+	RL_multipliers = (abs(frequencies) / (2 * np.pi)) #* np.power((np.cos(frequencies / )), alpha)
 	for row in FT:
 		row *= RL_multipliers
 
+	plt.plot(np.fft.fftfreq(m, scale),RL_multipliers)
+	plt.plot(np.fft.fftfreq(m, scale),abs(FT[0]))
+	plt.show()
 	# step 3: take the inverse Fourier transform in the r direction
-	sinogram = np.real(np.fft.ifft(FT, axis=1)).astype(float)[:,:(m-n)]
-	
+	#sinogram = np.real(np.fft.ifft(FT, axis=1)).astype(float)[:,:(m-n)]
+	sinogram = np.real(np.fft.ifft(FT, axis=1)[:,:n])
+
 	return sinogram
