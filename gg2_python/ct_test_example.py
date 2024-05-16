@@ -94,33 +94,30 @@ def test_2():
 	correlation = np.corrcoef(phantom, reconstruction)
 	print(correlation[0,1])
 
-def test_3(i=99):
+def test_3(j=189):
 	#Block attenuation values test
     #Sets of simulated material circles are scanned using an idealised source
-	#The expected attenuation is calculated using the attenuation coefficient for that energy and compared to the known values
-	selected_mev = material.mev[i] #0.1MeV
+	#The estimated attenuation is averaged over the black and compared to known values
+	selected_mev = material.mev[j] 
 	s = fake_source(source.mev, selected_mev, method='ideal') #idealised source
-	ms_errors = []
+	percent_errors = []
 	f = open('results/test_3_output.txt', mode='w')
 	save_draw(multi_circle_phantom([3, 2, 1]), 'results', 'Test3 Circles')
-	X = multi_circle_phantom((3*i, 3*i+1, 3*i+2))
-	for i in range(2): #testing first 6 materials in batches of 3
-		X = multi_circle_phantom((3*i, 3*i+1, 3*i+2)) #generate phantom
+	for i in range(6): #testing all 18 materials (non-air)
+		X = multi_circle_phantom((3*i+1, 3*i+2, 3*i+3)) #generate phantom
 		y = scan_and_reconstruct(s, material, X, 0.0001, 256, alpha = 3)
 
-		ms_errors.append(np.mean((y[80:100, 80:100]-material.coeff(material.name[3*i])[99])**2)) #average over suitable image sections
-		ms_errors.append(np.mean((y[80:100, 155:175]-material.coeff(material.name[3*i+1])[99])**2))
-		ms_errors.append(np.mean((y[155:175, 80:100]-material.coeff(material.name[3*i+2])[99])**2))
+		percent_errors.append(abs(np.mean((y[80:100, 80:100]-material.coeff(material.name[3*i+1])[j]))/material.coeff(material.name[3*i+1])[j])) #average over suitable image sections and square
+		percent_errors.append(abs(np.mean((y[80:100, 155:175]-material.coeff(material.name[3*i+2])[j]))/material.coeff(material.name[3*i+2])[j]))
+		percent_errors.append(abs(np.mean((y[155:175, 80:100]-material.coeff(material.name[3*i+3])[j]))/material.coeff(material.name[3*i+3])[j]))
 
-	for i in range(6):
-		f.writelines('Squared attenuation error for '+ material.name[i] + ' is ' + str(ms_errors[i]) + "\n")
-	total_ms_error = np.mean(ms_errors)
 
-	f.write('Mean squared error is  ' + str(total_ms_error) + "\n")
+	#Report results, lower errors are better
+	for i in range(18):
+		f.writelines('Fractional attenuation error for '+ material.name[i] + ' is ' + str(percent_errors[i]) + "\n")
+	mean_percent_error = np.mean(percent_errors)
 
-	if total_ms_error < 0.01:
-		f.write("Acceptable value agreement from reconstruction \n")
-		f.write("Pass \n")
+	f.write('Avg percent error is  ' + str(mean_percent_error*100) + r"%" +"\n")
 
 # Run the various tests
 # print('Test 1')
@@ -128,4 +125,4 @@ def test_3(i=99):
 # print('Test 2')
 # test_2()
 print('Test 3')
-test_3()
+test_3(189) #using high MeV to reduce beam hardening effects

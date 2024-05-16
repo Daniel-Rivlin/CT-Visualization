@@ -1,9 +1,19 @@
-Squared attenuation error for Air is 3.1950785068325888e-06
-Squared attenuation error for Adipose is 0.00026615476187399965
-Squared attenuation error for Soft Tissue is 0.0005154558871651087
-Squared attenuation error for Breast Tissue is 0.00034962658993517684
-Squared attenuation error for Water is 0.00041243429548551923
-Squared attenuation error for Blood is 0.0004959923521952637
-Mean squared error is  0.0003404764941936501
-Acceptable value agreement from reconstruction 
-Pass 
+Fractional attenuation error for Air is 0.10110760713111279
+Fractional attenuation error for Adipose is 0.10713242273500728
+Fractional attenuation error for Soft Tissue is 0.103958915354372
+Fractional attenuation error for Breast Tissue is 0.10162637548287476
+Fractional attenuation error for Water is 0.1029805880909633
+Fractional attenuation error for Blood is 0.17207677095451832
+Fractional attenuation error for Bone is 0.36724739819756985
+Fractional attenuation error for Titanium is 0.5662415351298251
+Fractional attenuation error for Cobalt is 0.4487335795234528
+Fractional attenuation error for Chromium is 0.5262383049777989
+Fractional attenuation error for Iron is 0.025117247064968196
+Fractional attenuation error for Carbon is 0.6054458711778684
+Fractional attenuation error for Nickel is 0.48741633584359767
+Fractional attenuation error for Manganese is 0.11770644807563106
+Fractional attenuation error for Aluminium is 0.644155407992911
+Fractional attenuation error for Copper is 0.5185839260002184
+Fractional attenuation error for Co-Cr is 0.5275266159315045
+Fractional attenuation error for Stainless Steel is 0.014627046834844152
+Avg percent error is  30.76623553610578%
