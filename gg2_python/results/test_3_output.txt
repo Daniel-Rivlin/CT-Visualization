@@ -1,0 +1,9 @@
+Squared attenuation error for Air is 3.1950785068325888e-06
+Squared attenuation error for Adipose is 0.00026615476187399965
+Squared attenuation error for Soft Tissue is 0.0005154558871651087
+Squared attenuation error for Breast Tissue is 0.00034962658993517684
+Squared attenuation error for Water is 0.00041243429548551923
+Squared attenuation error for Blood is 0.0004959923521952637
+Mean squared error is  0.0003404764941936501
+Acceptable value agreement from reconstruction 
+Pass 
