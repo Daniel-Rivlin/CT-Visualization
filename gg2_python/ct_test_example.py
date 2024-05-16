@@ -43,14 +43,35 @@ def test_2():
 	# explain what this test is for
 
 	# work out what the initial conditions should be
-	p = ct_phantom(material.name, 256, 2)
-	s = source.photon('80kVp, 1mm Al')
-	y = scan_and_reconstruct(s, material, p, 0.01, 256)
+	# p = ct_phantom(material.name, 256, 2)
+	# s = source.photon('80kVp, 1mm Al')
+	# y = scan_and_reconstruct(s, material, p, 0.01, 256)
 
-	# save some meaningful results
-	save_plot(y[128,:], 'results', 'test_2_plot')
+	# # save some meaningful results
+	# save_plot(y[128,:], 'results', 'test_2_plot')
 
-	# how to check whether these results are actually correct?
+	# check that attenuations at distinct energies match phantom
+
+	# convert phantom into attenuations
+	phantom = ct_phantom(material.name, 256, 1)
+	s = fake_source(source.mev, 0.1, method='ideal')
+	reconstruction = scan_and_reconstruct(s, material, phantom, 0.01, 256)
+
+	phantom[np.where(phantom < 0)] = 0
+	reconstruction[np.where(reconstruction < 0)] = 0
+	for m in range(1, len(material.name)):
+		if m in phantom:
+			phantom[np.where(phantom == m)] = material.coeffs[m, 9]
+
+	# generate a fake source with single energy
+	draw(phantom)
+	draw(reconstruction)
+
+	# find correlation between phantom and reconstruction
+	phantom = phantom.flatten()
+	reconstruction = reconstruction.flatten()
+	correlation = np.corrcoef(phantom, reconstruction)
+	print(correlation[0,1])
 
 def test_3(i=99):
 	#Block attenuation values test
@@ -83,7 +104,7 @@ def test_3(i=99):
 # Run the various tests
 # print('Test 1')
 # test_1()
-# print('Test 2')
-# test_2()
+print('Test 2')
+test_2()
 # print('Test 3')
-# test_3(99) 
+# test_3()

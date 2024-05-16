@@ -24,7 +24,6 @@ def ramp_filter(sinogram, scale, alpha=0.1):
 
 	# step 2: multiply each frequency by the appropriate coefficient in the Ram-Lak filter
 	frequencies = np.fft.fftfreq(m, scale)
-
 	RL_multipliers = (abs(frequencies)) * np.power(np.cos((frequencies / np.max(abs(frequencies))) * np.pi/2), alpha)
 	for row in FT:
 		row *= RL_multipliers
