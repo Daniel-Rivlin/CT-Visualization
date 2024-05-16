@@ -109,7 +109,7 @@ def test_3(j=189):
 	save_draw(multi_circle_phantom([3, 2, 1]), 'results', 'Test3 Circles')
 	for i in range(6): #testing all 18 materials (non-air)
 		X = multi_circle_phantom((3*i+1, 3*i+2, 3*i+3)) #generate phantom
-		y = scan_and_reconstruct(s, material, X, 0.0001, 256, alpha = 3)
+		y = scan_and_reconstruct(s, material, X, 0.000001, 256, alpha = 3)
 
 		percent_errors.append(abs(np.mean((y[80:100, 80:100]-material.coeff(material.name[3*i+1])[j]))/material.coeff(material.name[3*i+1])[j])) #average over suitable image sections and square
 		percent_errors.append(abs(np.mean((y[80:100, 155:175]-material.coeff(material.name[3*i+2])[j]))/material.coeff(material.name[3*i+2])[j]))
@@ -124,9 +124,9 @@ def test_3(j=189):
 	f.write('Avg percent error is  ' + str(mean_percent_error*100) + r"%" +"\n")
 
 # Run the various tests
-print('Test 1')
-test_1()
-print('Test 2')
-test_2()
+# print('Test 1')
+# test_1()
+# print('Test 2')
+# test_2()
 print('Test 3')
-test_3(189) #using high MeV to reduce beam hardening effects
+test_3(198) #using high MeV to reduce beam hardening effects
