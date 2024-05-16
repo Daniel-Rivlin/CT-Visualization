@@ -49,7 +49,7 @@ def plotter3(fig, ax, X, Y, angles, n=256):
 n = 256
 angles = 256
 source2 = source.photon('100kVp, 2mm Al')
-X = ct_phantom(material.name, 256, 3)
+X = ct_phantom(material.name, 256, 1)
 print(X)
 # y = ct_scan(source2, material, X, 0.1, angles)
 # # fig, ax = plt.subplots(1,2)
@@ -71,7 +71,7 @@ print(X)
 # frequencies = np.fft.fftfreq(m, scale) * 2 * np.pi
 # print(frequencies.shape)
 
-reconstruct_x = scan_and_reconstruct(source2, material, X, 0.1, angles, alpha = 3)
+reconstruct_x = scan_and_reconstruct(fake_source(material.mev, 0.08), material, X, 0.1, angles, alpha = 3)
 fig, ax = plt.subplots(1,2)
 # actual_atten = np.zeros(X.shape)
 
@@ -79,7 +79,7 @@ fig, ax = plt.subplots(1,2)
 #     for j in range(X.shape[1]):
 #         actual_atten[i, j] = np.sum(material.coeff(material.name[int(X[i,j])])*source2)
 
-plotter3(fig, ax, actual_atten, reconstruct_x, angles)
+plotter3(fig, ax, X, reconstruct_x, angles)
 print(np.shape(reconstruct_x))
 
 
