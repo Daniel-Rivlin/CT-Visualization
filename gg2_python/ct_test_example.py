@@ -92,9 +92,10 @@ def test_2():
 		correlations[i] = np.corrcoef(phantom, reconstruction)[0,1]
 
 	f = open('results/test_2_output.txt', mode='w')
+	f.write('The following coefficients correspond to phantoms and reconstructions\n with an ideal photon source emitting at a single photon energy of 1 MeV.\n\n')
 	f.write('Correlation coefficient for single large hip replacement: ' + str(correlations[0]) + '\n')
 	f.write('Correlation coefficient for bilateral hip replacement: ' + str(correlations[1]) + '\n')
-	f.write('Correlation coefficient for sphere with three satellites: ' + str(correlations[2]) + '\n')
+	f.write('Correlation coefficient for sphere with three satellites: ' + str(correlations[2]))
 	f.close()
 
 def test_3(i=99):
