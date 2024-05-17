@@ -1,19 +1,19 @@
-Fractional attenuation error for Air is 0.10110760713111279
-Fractional attenuation error for Adipose is 0.10713242273500728
-Fractional attenuation error for Soft Tissue is 0.103958915354372
-Fractional attenuation error for Breast Tissue is 0.10162637548287476
-Fractional attenuation error for Water is 0.1029805880909633
-Fractional attenuation error for Blood is 0.17207677095451832
-Fractional attenuation error for Bone is 0.36724739819756985
-Fractional attenuation error for Titanium is 0.5662415351298251
-Fractional attenuation error for Cobalt is 0.4487335795234528
-Fractional attenuation error for Chromium is 0.5262383049777989
-Fractional attenuation error for Iron is 0.025117247064968196
-Fractional attenuation error for Carbon is 0.6054458711778684
-Fractional attenuation error for Nickel is 0.48741633584359767
-Fractional attenuation error for Manganese is 0.11770644807563106
-Fractional attenuation error for Aluminium is 0.644155407992911
-Fractional attenuation error for Copper is 0.5185839260002184
-Fractional attenuation error for Co-Cr is 0.5275266159315045
-Fractional attenuation error for Stainless Steel is 0.014627046834844152
-Avg percent error is  30.76623553610578%
+Fractional attenuation error for Air is 0.10328646047383255
+Fractional attenuation error for Adipose is 0.10866161682863706
+Fractional attenuation error for Soft Tissue is 0.10565275008163408
+Fractional attenuation error for Breast Tissue is 0.1032844984911713
+Fractional attenuation error for Water is 0.10446213370390826
+Fractional attenuation error for Blood is 0.16637055100855336
+Fractional attenuation error for Bone is 0.3432274817808319
+Fractional attenuation error for Titanium is 0.5319404782699249
+Fractional attenuation error for Cobalt is 0.4197129536727226
+Fractional attenuation error for Chromium is 0.4934505165584547
+Fractional attenuation error for Iron is 0.03225018709141636
+Fractional attenuation error for Carbon is 0.5698202592878028
+Fractional attenuation error for Nickel is 0.4564844592610957
+Fractional attenuation error for Manganese is 0.11589143624876547
+Fractional attenuation error for Aluminium is 0.6075931113046402
+Fractional attenuation error for Copper is 0.48625476515869037
+Fractional attenuation error for Co-Cr is 0.49471175686064006
+Fractional attenuation error for Stainless Steel is 0.021692893594692803
+Avg percent error is  29.248601720430084%
