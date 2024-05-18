@@ -75,7 +75,7 @@ def test_2():
 
 		# simulate scanning and reconstruction using an ideal
 		# source emitting photons of energy 0.1 MeV
-		s = fake_source(source.mev, 0.1, method='ideal')
+		s = fake_source(source.mev, 0.1/0.7, method='ideal')
 		reconstruction = scan_and_reconstruct(s, material, phantom, 0.01, 256)
 		phantom[np.where(phantom < 0)] = 0
 		reconstruction[np.where(reconstruction < 0)] = 0
@@ -126,7 +126,7 @@ def test_3(j=189):
 # Run the various tests
 # print('Test 1')
 # test_1()
-# print('Test 2')
-# test_2()
-print('Test 3')
-test_3(198) #using high MeV to reduce beam hardening effects
+print('Test 2')
+test_2()
+# print('Test 3')
+# test_3(198) #using high MeV to reduce beam hardening effects
