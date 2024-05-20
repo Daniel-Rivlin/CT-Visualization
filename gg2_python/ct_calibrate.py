@@ -1,8 +1,8 @@
 import numpy as np
 import scipy
 from scipy import interpolate
-
-def ct_calibrate(photons, material, sinogram, scale):
+import ct_detect
+def ct_calibrate(photons, material, sinogram, scale, correct_beam_hardening = False, mas=10000):
 
 	""" ct_calibrate convert CT detections to linearised attenuation
 	sinogram = ct_calibrate(photons, material, sinogram, scale) takes the CT detection sinogram
@@ -20,4 +20,23 @@ def ct_calibrate(photons, material, sinogram, scale):
 	calibration_scan = np.sum(photons * np.exp(-depth * material.coeff('Air')))
 	sinogram = -np.log(sinogram / calibration_scan)
 
+	if correct_beam_hardening == True:
+		C = 1
+		#Correct beam hardening
+		#Gather Data
+		t = np.linspace(0,scale*n,1000)
+		calibration_scan = np.sum(photons * np.exp(-2 * n * scale * material.coeff('Air')))
+		p = ct_detect.ct_detect(photons, material.coeff('Water'), t)
+		p = -np.log(p / calibration_scan)
+
+		
+		# #Polyfit approach
+		fit_coeffs = np.polyfit(p, t, 3) #cubic
+		sinogram = np.polyval(fit_coeffs, sinogram)
+
+		# #Interpolation approach 
+		# sinogram = np.interp(sinogram, p_fit, t)
+
+		sinogram = sinogram * C #should be unnecessary with conversion to HU
+	
 	return sinogram
