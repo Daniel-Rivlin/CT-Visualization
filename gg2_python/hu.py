@@ -21,6 +21,6 @@ def hu(p, material, reconstruction, scale):
 	reconstruction = 1000 * ((reconstruction - water_photons) / water_photons)
 
 	# limit minimum to -1024, which is normal for CT data.
-	reconstruction = np.clip(reconstruction, -1024, 3072)
+	reconstruction = np.clip(reconstruction, -1024, None)
 
 	return reconstruction
