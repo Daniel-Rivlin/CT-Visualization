@@ -278,6 +278,27 @@ class Xtreme(object):
                     if (scan<self.scans):
 
 						# reconstruct scan
+                        [Y, Ymin, Ymax] = self.get_rsq_slice(scan)
+                        # calibrate
+                        Y = -np.log(Y / Ymax)
+                        # Ram-Lak filter
+                        Y = ramp_filter(Y, self.scale, alpha)
+                        # back-projection
+                        reconstruction = back_project(Y)
+                        # HU unit conversion
+                        # use water to calibrate
+                        n = reconstruction.shape[1]
+                        depth = 2 * n * self.scale
+                        water_photons = np.sum(Ymax * np.exp(-depth * material.coeff('Water')))
+
+                        # put this through the same calibration process as the normal CT data
+                        water_photons = -np.log(water_photons / sum(Ymax)) / depth
+
+                        # use result to convert to hounsfield units
+                        reconstruction = 1000 * ((reconstruction - water_photons) / water_photons)
+
+                        # limit minimum to -1024, which is normal for CT data.
+                        reconstruction = np.clip(reconstruction, -1024, None)
 
 						# save as dicom file
                         z = z + 1
