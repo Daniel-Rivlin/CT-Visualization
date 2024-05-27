@@ -7,6 +7,7 @@ import sys
 from ramp_filter import *
 from back_project import *
 from create_dicom import *
+from hu_xtreme import *
 
 class Xtreme(object):
     def __init__(self, file):
@@ -192,7 +193,7 @@ class Xtreme(object):
         samples) and converts this to an equivalent parallel-beam sinogram
         in Y (recon_angles x samples)."""
 
-        print('Fan to parallel sinogram')
+        # print('Fan to parallel sinogram')
         
         # calculate some required parameters
         angles = self.recon_angles
@@ -274,34 +275,54 @@ class Xtreme(object):
             else:
 
                 # default method should reconstruct each slice separately
-                for scan in range(fan+self.skip_scans,fan+self.fan_scans-self.skip_scans):
-                    if (scan<self.scans):
-
-						# reconstruct scan
-                        [Y, Ymin, Ymax] = self.get_rsq_slice(scan)
-                        # calibrate
-                        Y = -np.log(Y / Ymax)
-                        # Ram-Lak filter
-                        Y = ramp_filter(Y, self.scale, alpha)
-                        # back-projection
-                        reconstruction = back_project(Y)
-                        # HU unit conversion
-                        # use water to calibrate
-                        n = reconstruction.shape[1]
-                        depth = 2 * n * self.scale
-                        water_photons = np.sum(Ymax * np.exp(-depth * material.coeff('Water')))
-
-                        # put this through the same calibration process as the normal CT data
-                        water_photons = -np.log(water_photons / sum(Ymax)) / depth
-
-                        # use result to convert to hounsfield units
-                        reconstruction = 1000 * ((reconstruction - water_photons) / water_photons)
-
-                        # limit minimum to -1024, which is normal for CT data.
-                        reconstruction = np.clip(reconstruction, -1024, None)
-
-						# save as dicom file
-                        z = z + 1
+                # for scan in range(fan+self.skip_scans,fan+self.fan_scans-self.skip_scans):
+                #     if (scan<self.scans):
+				# 		  # reconstruct scan
+                #         [Y, Ymin, Ymax] = self.get_rsq_slice(scan)
+                #         # account for background radiation
+                #         Y -= Ymin
+                #         calib_scan = Ymax - Ymin
+                #         # convert to parallel
+                #         calib_scan = np.tile(calib_scan, (Y.shape[0],1))
+                #         Y = self.fan_to_parallel(Y)
+                #         calib_scan = self.fan_to_parallel(calib_scan)
+                #         calib_scan = calib_scan[0]
+                #         # calibrate
+                #         Y = np.clip(Y, 1, None)
+                #         Y = -np.log(Y / sum(calib_scan))
+                #         # Ram-Lak filter
+                #         Y = ramp_filter(Y, self.scale, alpha)
+                #         # back-projection
+                #         reconstruction = back_project(Y)
+                #         # HU unit conversion
+                #         #reconstruction = hu_xtreme(calib_scan, material, reconstruction, self.scale)
+				# 		# save as dicom file
+                #         create_dicom(reconstruction, file, 0.5, 0.5, z, studyuid, seriesuid, time)
+                #         z = z + 1
+                if z == 1:
+                    [Y, Ymin, Ymax] = self.get_rsq_slice(100)
+                    # account for background radiation
+                    Y -= Ymin
+                    calib_scan = Ymax - Ymin
+                    # convert to parallel
+                    calib_scan = np.tile(calib_scan, (Y.shape[0], 1))
+                    Y = self.fan_to_parallel(Y)
+                    calib_scan = self.fan_to_parallel(calib_scan)
+                    calib_scan = calib_scan[0]
+                    # calibrate
+                    Y = np.clip(Y, 1, None)
+                    calib_scan = np.clip(calib_scan, 1, None)
+                    Y = -np.log(Y / calib_scan[None,:])
+                    # Ram-Lak filter
+                    Y = ramp_filter(Y, self.scale, alpha)
+                    # back-projection
+                    reconstruction = back_project(Y)
+                    # HU unit conversion
+                    #reconstruction = hu_xtreme(calib_scan, material, reconstruction, self.scale)
+                    # save as dicom file
+                    reconstruction *= 1000
+                    create_dicom(reconstruction, file, 0.5)
+                    z += 1
 
         return
 

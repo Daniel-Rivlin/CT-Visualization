@@ -20,7 +20,7 @@ def ramp_filter(sinogram, scale, alpha=0.1):
 	m = int(2 ** m)
 
 	# apply filter to all angles
-	print('Ramp filtering')
+	# print('Ramp filtering')
 
 	# step 1: take the Fourier transform in r direction
 	FT = np.fft.fft(sinogram, n=m, axis=1)
