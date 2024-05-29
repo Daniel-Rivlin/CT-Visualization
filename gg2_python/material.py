@@ -1,6 +1,5 @@
 import numpy as np
 from openpyxl import load_workbook
-from hu_xtreme import *
 
 
 class Material(object):

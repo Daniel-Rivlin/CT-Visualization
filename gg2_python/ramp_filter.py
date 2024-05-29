@@ -12,7 +12,6 @@ def ramp_filter(sinogram, scale, alpha=0.1):
 	cosine raised to the power given by alpha."""
 
 	# get input dimensions
-	angles = sinogram.shape[0]
 	n = sinogram.shape[1]
 
 	# set up filter to be at least twice as long as input
