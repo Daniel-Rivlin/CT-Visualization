@@ -8,6 +8,7 @@ from ramp_filter import *
 from back_project import *
 from create_dicom import *
 from hu_xtreme import *
+from ct_lib import *
 
 class Xtreme(object):
     def __init__(self, file):
@@ -320,7 +321,10 @@ class Xtreme(object):
                     # HU unit conversion
                     #reconstruction = hu_xtreme(calib_scan, material, reconstruction, self.scale)
                     # save as dicom file
-                    reconstruction *= 1000
+                    mu_w = 0.0505
+                    reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
+                    reconstruction = np.clip(reconstruction, -1024, None)
+                    draw(reconstruction)
                     create_dicom(reconstruction, file, 0.5)
                     z += 1
 
