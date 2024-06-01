@@ -265,8 +265,6 @@ class Xtreme(object):
         studyuid = pydicom.uid.generate_uid()
         frameuid = pydicom.uid.generate_uid()
         time = datetime.datetime.now()
-        # sz = 200/self.scans
-        # sp = 221/self.samples
         sz = sp = self.scale
 
         # create grid of premultipliers for fdk
@@ -284,9 +282,17 @@ class Xtreme(object):
         for fan in range(0, self.scans, self.fan_scans):
             if method == 'fdk':
                 # correct reconstruction using FDK method, self.fan_scans scans at a time
-
+                if fan + self.fan_scans > self.scans:
+                    fan_total = self.scans - fan
+                    b = np.arange(0.5 - (fan_total/2), 0.5 + (fan_total/2))
+                    b = np.tile(np.square(b), (self.samples, 1))
+                    b = b.T
+                    a = np.tile(np.square(a), (fan_total, 1))
+                    multimat = R / np.sqrt(a + b + R*R)
+                else:
+                    fan_total = self.fan_scans
                 # 3d stack of sinograms
-                comb3d = np.zeros((self.angles, self.samples, self.fan_scans))
+                comb3d = np.zeros((self.angles, self.samples, fan_total))
                 
                 print("\n retrieving data and filtering...")
                 for thetaN in range(self.angles):
@@ -298,9 +304,9 @@ class Xtreme(object):
                     Y -= Ymin
                     calib_scan = Ymax - Ymin
                     
-                    # take self.fan_scans section
-                    Y = Y[fan:fan+self.fan_scans]
-                    calib_scan = calib_scan[fan:fan+self.fan_scans]
+                    # take fan section
+                    Y = Y[fan:fan+fan_total]
+                    calib_scan = calib_scan[fan:fan+fan_total]
 
                     # premultiply
                     Y = np.multiply(Y, multimat)
@@ -317,17 +323,17 @@ class Xtreme(object):
                     # Add to 3d array
                     comb3d[thetaN] = Y.T
 
-                # remove overlap scans
-                comb3d = comb3d[:,:,self.skip_scans:fan+self.fan_scans-self.skip_scans]
-
                 # make slices parallel in x-y planes
                 new_angles = self.fan_to_parallel(comb3d[:,:,0]).shape[0]
                 comb3dpara = np.zeros((new_angles, comb3d.shape[1], comb3d.shape[2]))
                 for slice in range(comb3d.shape[2]):
                     comb3dpara[:,:,slice] = self.fan_to_parallel(comb3d[:,:,slice])
                 
-                # use fdk to select best slice for each sample in a sinogram
+                # use fdk to select best slice for each sample in sinograms
                 comb3dpara = fdk(comb3dpara, self.scale, self.radius)
+
+                # remove overlap scans
+                comb3dpara = comb3dpara[:,:,self.skip_scans:fan+fan_total-self.skip_scans]
                 
                 # reconstruct
                 for slice in range(comb3dpara.shape[2]):
@@ -340,8 +346,8 @@ class Xtreme(object):
                     reconstruction = np.clip(reconstruction, -1024, None)
 
                     # save as dicom file
-                    create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM b fdk')
-                    print("file", z, "/ 581")
+                    create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM a fdk')
+                    print("file", z, "/ 605")
                     z = z + 1
 
             else:
