@@ -6,6 +6,7 @@ import os
 import sys
 from ramp_filter import *
 from back_project import *
+from fdk import *
 from create_dicom import *
 from ct_lib import *
 
@@ -268,65 +269,80 @@ class Xtreme(object):
         # sp = 221/self.samples
         sz = sp = self.scale
 
+        # create grid of premultipliers for fdk
+        # (accounts for fans travelling different distances through material)
+        if method == 'fdk':
+            R = self.radius
+            b = np.arange(0.5 - (self.fan_scans/2), 0.5 + (self.fan_scans/2))
+            a = np.arange(0.5 - (self.samples/2), 0.5 + (self.samples/2))
+            b = np.tile(np.square(b), (self.samples, 1))
+            b = b.T
+            a = np.tile(np.square(a), (self.fan_scans, 1))
+            multimat = R / np.sqrt(a + b + R*R)
+
         # main loop over each z-fan
         for fan in range(0, self.scans, self.fan_scans):
             if method == 'fdk':
-                if z == 1:
-                    fan += self.fan_scans * 5
-                    # correct reconstruction using FDK method, self.fan_scans scans at a time
-                    comb3d = np.zeros((self.angles, self.samples, self.fan_scans))
+                # correct reconstruction using FDK method, self.fan_scans scans at a time
+
+                # 3d stack of sinograms
+                comb3d = np.zeros((self.angles, self.samples, self.fan_scans))
+                
+                print("\n retrieving data and filtering...")
+                for thetaN in range(self.angles):
+
+                    # get the current fan scan info
+                    [Y, Ymin, Ymax] = self.get_rsq_scan(thetaN)
+
+                    # account for background radiation
+                    Y -= Ymin
+                    calib_scan = Ymax - Ymin
                     
-                    for thetaN in range(self.angles):
+                    # take self.fan_scans section
+                    Y = Y[fan:fan+self.fan_scans]
+                    calib_scan = calib_scan[fan:fan+self.fan_scans]
 
-                        # get the current fan scan info
-                        [Y, Ymin, Ymax] = self.get_rsq_scan(thetaN)
+                    # premultiply
+                    Y = np.multiply(Y, multimat)
+                    calib_scan = np.multiply(calib_scan, multimat)
 
-                        # account for background radiation
-                        Y -= Ymin
-                        calib_scan = Ymax - Ymin
-                        
-                        # take self.fan_scans section
-                        Y = Y[fan:fan+self.fan_scans]
-                        print(thetaN, "/", self.angles)
-                        calib_scan = calib_scan[fan:fan+self.fan_scans]
+                    # calibrate
+                    Y = np.clip(Y, 1, None)
+                    calib_scan = np.clip(calib_scan, 1, None)
+                    Y = -np.log(Y / calib_scan)
 
-                        # convert to parallel via fdk
-                        R = self.radius
-                        for i in range(Y.shape[0]):
-                            for j in range(Y.shape[1]):
-                                Y[i,j] *= R / np.sqrt(R*R + i*i + j*j)
-                                calib_scan[i,j] *= R / np.sqrt(R*R + i*i + j*j)
+                    # Ram-Lak filter
+                    Y = ramp_filter(Y, self.scale, alpha)
 
-                        # calibrate
-                        Y = np.clip(Y, 1, None)
-                        calib_scan = np.clip(calib_scan, 1, None)
-                        Y = -np.log(Y / calib_scan)
+                    # Add to 3d array
+                    comb3d[thetaN] = Y.T
 
-                        # Ram-Lak filter
-                        Y = ramp_filter(Y, self.scale, alpha)
+                # remove overlap scans
+                comb3d = comb3d[:,:,self.skip_scans:fan+self.fan_scans-self.skip_scans]
 
-                        # Add to 3d array
-                        comb3d[thetaN] = Y.T
+                # make slices parallel in x-y planes
+                new_angles = self.fan_to_parallel(comb3d[:,:,0]).shape[0]
+                comb3dpara = np.zeros((new_angles, comb3d.shape[1], comb3d.shape[2]))
+                for slice in range(comb3d.shape[2]):
+                    comb3dpara[:,:,slice] = self.fan_to_parallel(comb3d[:,:,slice])
+                
+                # use fdk to select best slice for each sample in a sinogram
+                comb3dpara = fdk(comb3dpara, self.scale, self.radius)
+                
+                # reconstruct
+                for slice in range(comb3dpara.shape[2]):
+                    # back-projection
+                    reconstruction = back_project(comb3dpara[:,:,slice])
 
-                    # remove overlap scans
-                    comb3d = comb3d[:,:,self.skip_scans:fan+self.fan_scans-self.skip_scans]
-                    print(comb3d.shape)
+                    # HU unit conversion
+                    mu_w = 0.0234
+                    reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
+                    reconstruction = np.clip(reconstruction, -1024, None)
 
-                    for slice in range(comb3d.shape[2]):
-                        # back-projection
-                        reconstruction = self.fan_to_parallel(comb3d[:,:,slice]) #dubious
-                        reconstruction = back_project(reconstruction)
-
-                        # HU unit conversion
-                        mu_w = 0.0505
-                        reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
-                        reconstruction = np.clip(reconstruction, -1024, None)
-
-                        # save as dicom file
-                        # create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM a fdk')
-                        print("file", z)
-                        draw(reconstruction)
-                        z = z + 1
+                    # save as dicom file
+                    create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM b fdk')
+                    print("file", z, "/ 581")
+                    z = z + 1
 
             else:
 
@@ -359,42 +375,13 @@ class Xtreme(object):
                         reconstruction = back_project(Y)
 
                         # HU unit conversion
-                        mu_w = 0.0505
+                        mu_w = 0.0234
                         reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
                         reconstruction = np.clip(reconstruction, -1024, None)
 
 						# save as dicom file
-                        create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM a para')
+                        create_dicom(reconstruction, filename=file, sp=sp, sz=sz, f=z, study_uid=studyuid, series_uid=seriesuid, frame_uid=pydicom.uid.generate_uid(), time=datetime.datetime.now(), storage_directory='DICOM b para')
                         print("file", z, "/ 581")
                         z = z + 1
-
-
-                # if z == 1:
-                #     [Y, Ymin, Ymax] = self.get_rsq_slice(100)
-                #     # account for background radiation
-                #     Y -= Ymin
-                #     calib_scan = Ymax - Ymin
-                #     # convert to parallel
-                #     calib_scan = np.tile(calib_scan, (Y.shape[0], 1))
-                #     Y = self.fan_to_parallel(Y)
-                #     calib_scan = self.fan_to_parallel(calib_scan)
-                #     calib_scan = calib_scan[0]
-                #     # calibrate
-                #     Y = np.clip(Y, 1, None)
-                #     calib_scan = np.clip(calib_scan, 1, None)
-                #     Y = -np.log(Y / calib_scan[None,:])
-                #     # Ram-Lak filter
-                #     Y = ramp_filter(Y, self.scale, alpha)
-                #     # back-projection
-                #     reconstruction = back_project(Y)
-                #     # HU unit conversion
-                #     mu_w = 0.0505
-                #     reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
-                #     reconstruction = np.clip(reconstruction, -1024, None)
-                #     # draw(reconstruction)
-                #     # save as dicom file
-                #     create_dicom(reconstruction, file, 0.5)
-                #     z += 1
-
         return
 

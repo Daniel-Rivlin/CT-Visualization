@@ -8,7 +8,7 @@ def back_project(sinogram, skip=1):
 
 	"""back_project back-projection to reconstruct CT data
 	back_project(sinogram) back-projects the filtered sinogram
-	(angles x samples) to create the reconstruted data (samples x
+	(angles x samples) to create the reconstructed data (samples x
 	samples)"""
 
 	# get input dimensions
