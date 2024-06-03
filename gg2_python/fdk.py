@@ -59,8 +59,12 @@ def fdk(sinograms, scale, R):
 	new_sinograms = np.zeros(sinograms.shape)
 	
     # assign values of the original sinogram to new one, this time selecting most appropriate slice in stack for each sample
-	for scan in range(scans):
-		for sample in range(ns):
-			new_sinograms[:,sample,scan] = sinograms[:,sample,int(fan_select[scan,sample])]
+	# for scan in range(scans):
+	# 	for sample in range(ns):
+	# 		new_sinograms[:,sample,scan] = sinograms[:,sample,int(fan_select[scan,sample])]
+
+	for slice in range(scans):
+		sample_final = np.sum(sinograms[:,:,fan_select[slice]], axis=3)/ns
+		new_sinograms[:,:,slice] = sample_final
 
 	return new_sinograms
