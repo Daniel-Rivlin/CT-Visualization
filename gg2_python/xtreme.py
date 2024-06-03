@@ -341,7 +341,7 @@ class Xtreme(object):
                     reconstruction = back_project(comb3dpara[:,:,slice])
 
                     # HU unit conversion
-                    mu_w = 0.0235
+                    mu_w = 0.0234
                     reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
                     reconstruction = np.clip(reconstruction, -1024, None)
 
@@ -381,7 +381,7 @@ class Xtreme(object):
                         reconstruction = back_project(Y)
 
                         # HU unit conversion
-                        mu_w = 0.0235
+                        mu_w = 0.0234
                         reconstruction = ((reconstruction - mu_w) / mu_w) * 1000
                         reconstruction = np.clip(reconstruction, -1024, None)
 
